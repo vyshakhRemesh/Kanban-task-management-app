@@ -3,7 +3,7 @@ import Board from './components/Board'
 import CardModal from './components/CardModal'
 import Toasts from './components/Toast'
 import Topbar from './components/Topbar'
-import CommandPalette from './components/CommandPalette'
+
 import { store } from './store'
 
 export default function App() {

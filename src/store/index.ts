@@ -4,14 +4,31 @@ import columns from './columnsSlice'
 import cards from './cardsSlice'
 import filters from './filtersSlice'
 import ui from './uiSlice'
-import { historyMiddleware } from './history'
+import { loadState, saveState, throttle } from './persist'
 
-function loadState(){ try{ const raw = localStorage.getItem('kanban-pro-state-v1'); return raw ? JSON.parse(raw) : undefined } catch (e) { return undefined } }
+const preloaded = loadState();
+
 export const store = configureStore({
   reducer: { boards, columns, cards, filters, ui },
-  middleware: (gdm) => gdm().concat(historyMiddleware),
-  devTools: true,
-  preloadedState: (typeof window!=='undefined' ? loadState() : undefined)
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
+  preloadedState: preloaded,
 })
+
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
+
+;(window as any).__store__ = store
+export default store
+
+
+store.subscribe(
+  throttle(() => {
+    const s = store.getState() as any;
+    saveState({
+      boards: s.boards,
+      columns: s.columns,
+      cards: s.cards,
+      filters: s.filters,
+    });
+  }, 500)
+);
